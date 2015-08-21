@@ -22,4 +22,6 @@
     <string name="no_result_label">No artist found. Please check your input.</string>
     <string name="no_track_label">No track found. Please select another artist.</string>
     <string name="no_connection_label">There is a connection problem.</string>
+    <string name="title_activity_player">Spotify Streamer</string>
+    <string name="buffer_text">Buffering.....</string>
 </resources>

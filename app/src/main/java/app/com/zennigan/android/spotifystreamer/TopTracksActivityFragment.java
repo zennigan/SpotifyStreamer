@@ -11,8 +11,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import org.apache.http.protocol.HTTP;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,11 +33,19 @@ import retrofit.RetrofitError;
  */
 public class TopTracksActivityFragment extends Fragment {
 
+    private static final String PLAYER_FRAGMENT_TAG = "PLAYER_TAG";
+
     private static final String KEY_TRACK_LIST = "trackList";
+    public static final String TRACK_ID = "id";
+    public static final String TRACK_ARTIST = "artist";
+    public static final String TRACK_TWO_PANE = "twoPane";
 
     private ListView mTrackListView;
     private TrackListAdapter mTrackAdapter;
     private ArrayList<TrackParcel> mTrackParcelList;
+    private String mArtistName;
+    private String mArtistId;
+    private boolean mTwoPane;
 
     public TopTracksActivityFragment() {
     }
@@ -44,10 +55,24 @@ public class TopTracksActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_top_tracks, container, false);
-        String artistId = getActivity().getIntent().getStringExtra(Intent.EXTRA_TEXT);
-        String artistName = getActivity().getIntent().getStringExtra(Intent.EXTRA_TITLE);
+//        String artistId = getActivity().getIntent().getStringExtra(Intent.EXTRA_TEXT);
+//        mArtistName = getActivity().getIntent().getStringExtra(Intent.EXTRA_TITLE);
 
-        ((ActionBarActivity)getActivity()).getSupportActionBar().setSubtitle(artistName);
+
+        Bundle arguments  = getArguments();
+        if(arguments !=null){
+            mArtistName = arguments.getString(TopTracksActivityFragment.TRACK_ARTIST);
+            mArtistId = arguments.getString(TopTracksActivityFragment.TRACK_ID);
+
+            if(arguments.containsKey(TRACK_TWO_PANE)){
+                mTwoPane = arguments.getBoolean(TRACK_TWO_PANE);
+            }
+        }
+
+        ((ActionBarActivity)getActivity()).getSupportActionBar().setSubtitle(mArtistName);
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
+        String countryCode = preferences.getString(getString(R.string.pref_country_key), getString(R.string.pref_country_default));
 
         mTrackListView = (ListView) rootView.findViewById(R.id.listView_track);
 
@@ -57,16 +82,35 @@ public class TopTracksActivityFragment extends Fragment {
         } else {
             // load the person list
             mTrackParcelList = new ArrayList<TrackParcel>();
+            new TrackListTask().execute(mArtistId,countryCode);
         }
 
         mTrackAdapter = new TrackListAdapter(getActivity(), mTrackParcelList);
         mTrackListView.setAdapter(mTrackAdapter);
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
+        mTrackListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-        String countryCode = preferences.getString(getString(R.string.pref_country_key), getString(R.string.pref_country_default));
+                if(mTwoPane){
+                    Bundle args = new Bundle();
+                    args.putString(PlayerActivityFragment.PLAYER_ARTIST, mArtistName);
+                    args.putParcelableArrayList(PlayerActivityFragment.PLAYER_TRACK_LIST, mTrackParcelList);
+                    args.putInt(PlayerActivityFragment.PLAYER_POSITION, position);
 
-        new TrackListTask().execute(artistId,countryCode);
+                    PlayerActivityFragment fragment = new PlayerActivityFragment();
+                    fragment.setArguments(args);
+                    fragment.show(getActivity().getSupportFragmentManager(),PLAYER_FRAGMENT_TAG);
+                }else{
+                    Intent playerIntent = new Intent(getActivity(), PlayerActivity.class);
+
+                    playerIntent.putExtra(PlayerActivityFragment.PLAYER_ARTIST, mArtistName);
+                    playerIntent.putParcelableArrayListExtra(PlayerActivityFragment.PLAYER_TRACK_LIST, mTrackParcelList);
+                    playerIntent.putExtra(PlayerActivityFragment.PLAYER_POSITION, position);
+                    startActivity(playerIntent);
+                }
+            }
+        });
 
         return rootView;
     }
@@ -114,12 +158,20 @@ public class TopTracksActivityFragment extends Fragment {
                     if (trackList != null) {
                         trackParcelList = new ArrayList<TrackParcel>();
                         for (Track track : trackList) {
-                            String image = null;
-                            if (track.album.images != null && track.album.images.size() > 0) {
-                                image = track.album.images.get(track.album.images.size() - 1).url;
+                            if(track!=null) {
+                                String image = null;
+                                String playerImage = null;
+                                if (track.album.images != null && track.album.images.size() > 0) {
+                                    image = track.album.images.get(track.album.images.size() - 1).url;
+                                }
+                                if (track.album.images != null && track.album.images.size() > 2) {
+                                    playerImage = track.album.images.get(track.album.images.size() - 2).url;
+                                } else if (track.album.images != null && track.album.images.size() == 1) {
+                                    playerImage = track.album.images.get(0).url;
+                                }
+                                TrackParcel trackParcel = new TrackParcel(track.album.name, image, track.name, playerImage, track.preview_url);
+                                trackParcelList.add(trackParcel);
                             }
-                            TrackParcel trackParcel = new TrackParcel(track.album.name, image, track.name);
-                            trackParcelList.add(trackParcel);
                         }
                     }
                 }

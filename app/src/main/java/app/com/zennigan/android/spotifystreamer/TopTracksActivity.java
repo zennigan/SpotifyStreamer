@@ -13,8 +13,21 @@ public class TopTracksActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_top_tracks);
-    }
 
+        if (savedInstanceState == null) {
+
+            Bundle args = new Bundle();
+            args.putString(TopTracksActivityFragment.TRACK_ID,getIntent().getStringExtra(TopTracksActivityFragment.TRACK_ID));
+            args.putString(TopTracksActivityFragment.TRACK_ARTIST, getIntent().getStringExtra(TopTracksActivityFragment.TRACK_ARTIST));
+
+            TopTracksActivityFragment fragment = new TopTracksActivityFragment();
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.track_list_container, fragment)
+                    .commit();
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

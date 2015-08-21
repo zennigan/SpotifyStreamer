@@ -6,13 +6,34 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import org.apache.http.protocol.HTTP;
 
-public class MainActivity extends ActionBarActivity {
+import java.util.ArrayList;
+
+
+public class MainActivity extends ActionBarActivity implements MainActivityFragment.Callback{
+
+    private static final String TOP_TRACK_FRAGMENT_TAG = "TT_TAG";
+
+    private boolean mTwoPane;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (findViewById(R.id.track_list_container) != null) {
+            mTwoPane = true;
+//            if (savedInstanceState == null) {
+//                getSupportFragmentManager().beginTransaction()
+//                        .replace(R.id.track_list_container, new TopTracksActivityFragment(), TOP_TRACK_FRAGMENT_TAG)
+//                        .commit();
+//            }
+        } else {
+            mTwoPane = false;
+
+        }
+
     }
 
 
@@ -40,4 +61,25 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onItemSelected(String id, String artist) {
+        if(mTwoPane){
+            Bundle args = new Bundle();
+            args.putString(TopTracksActivityFragment.TRACK_ID,id);
+            args.putString(TopTracksActivityFragment.TRACK_ARTIST, artist);
+            args.putBoolean(TopTracksActivityFragment.TRACK_TWO_PANE, mTwoPane);
+
+            TopTracksActivityFragment fragment = new TopTracksActivityFragment();
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.track_list_container,fragment, TOP_TRACK_FRAGMENT_TAG)
+                    .commit();
+        }else{
+            Intent trackIntent = new Intent(this, TopTracksActivity.class);
+            trackIntent.putExtra(TopTracksActivityFragment.TRACK_ID,id);
+            trackIntent.putExtra(TopTracksActivityFragment.TRACK_ARTIST, artist);
+            startActivity(trackIntent);
+        }
+    }
 }

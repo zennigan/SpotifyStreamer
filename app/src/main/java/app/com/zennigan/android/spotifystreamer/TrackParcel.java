@@ -13,19 +13,25 @@ public class TrackParcel implements Parcelable {
     private static final String KEY_ALBUM = "album";
     private static final String KEY_IMAGE = "image";
     private static final String KEY_TITLE = "title";
+    private static final String KEY_PLAYER_IMAGE = "playerImage";
+    private static final String KEY_PREVIEW_URL = "previewUrl";
 
     private String album;
     private String image;
     private String title;
+    private String playerImage;
+    private String previewUrl;
 
     public TrackParcel() {
 
     }
 
-    public TrackParcel(String album, String image, String title) {
+    public TrackParcel(String album, String image, String title, String playerImage,String previewUrl) {
         this.album = album;
         this.image = image;
         this.title = title;
+        this.playerImage = playerImage;
+        this.previewUrl = previewUrl;
     }
 
     public String getAlbum() {
@@ -52,6 +58,22 @@ public class TrackParcel implements Parcelable {
         this.title = title;
     }
 
+    public String getPlayerImage() {
+        return playerImage;
+    }
+
+    public void setPlayerImage(String playerImage) {
+        this.playerImage = playerImage;
+    }
+
+    public String getPreviewUrl() {
+        return previewUrl;
+    }
+
+    public void setPreviewUrl(String previewUrl) {
+        this.previewUrl = previewUrl;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -66,6 +88,8 @@ public class TrackParcel implements Parcelable {
         bundle.putString(KEY_ALBUM, album);
         bundle.putString(KEY_IMAGE, image);
         bundle.putString(KEY_TITLE, title);
+        bundle.putString(KEY_PLAYER_IMAGE, playerImage);
+        bundle.putString(KEY_PREVIEW_URL, previewUrl);
 
         // write the key value pairs to the parcel
         dest.writeBundle(bundle);
@@ -74,21 +98,21 @@ public class TrackParcel implements Parcelable {
     /**
      * Creator required for class implementing the parcelable interface.
      */
-    public static final Parcelable.Creator<ArtistParcel> CREATOR = new Creator<ArtistParcel>() {
+    public static final Parcelable.Creator<TrackParcel> CREATOR = new Creator<TrackParcel>() {
 
         @Override
-        public ArtistParcel createFromParcel(Parcel source) {
+        public TrackParcel createFromParcel(Parcel source) {
             // read the bundle containing key value pairs from the parcel
             Bundle bundle = source.readBundle();
 
             // instantiate a person using values from the bundle
-            return new ArtistParcel(bundle.getString(KEY_ALBUM),
-                    bundle.getString(KEY_IMAGE),bundle.getString(KEY_TITLE) );
+            return new TrackParcel(bundle.getString(KEY_ALBUM),
+                    bundle.getString(KEY_IMAGE),bundle.getString(KEY_TITLE),bundle.getString(KEY_PLAYER_IMAGE),bundle.getString(KEY_PREVIEW_URL) );
         }
 
         @Override
-        public ArtistParcel[] newArray(int size) {
-            return new ArtistParcel[size];
+        public TrackParcel[] newArray(int size) {
+            return new TrackParcel[size];
         }
 
     };

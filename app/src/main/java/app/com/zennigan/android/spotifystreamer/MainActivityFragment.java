@@ -1,9 +1,12 @@
 package app.com.zennigan.android.spotifystreamer;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.widget.AdapterView;
 import android.widget.ImageView;
@@ -33,11 +36,20 @@ import retrofit.RetrofitError;
  */
 public class MainActivityFragment extends Fragment {
 
+    private static final String POSITION = "APOS";
     private static final String KEY_ARTIST_LIST = "artistList";
     private SearchView mArtistSearchView;
     private ListView mArtistListView;
     private ArtistListAdapter mArtistAdapter;
     private ArrayList<ArtistParcel> mArtistParcelList;
+    private int mPosition = -1;
+
+    public interface Callback {
+        /**
+         * MainActivityFragment Callback for when an item has been selected.
+         */
+        public void onItemSelected(String id, String artist);
+    }
 
     public MainActivityFragment() {
     }
@@ -58,6 +70,10 @@ public class MainActivityFragment extends Fragment {
 
         mArtistListView = (ListView) rootView.findViewById(R.id.listView_artist);
 
+        if(savedInstanceState != null && savedInstanceState.containsKey(POSITION)){
+            mPosition = savedInstanceState.getInt(POSITION);
+        }
+
         if(savedInstanceState != null) {
             // read the person list from the saved state
             mArtistParcelList = savedInstanceState.getParcelableArrayList(KEY_ARTIST_LIST);
@@ -68,17 +84,29 @@ public class MainActivityFragment extends Fragment {
         mArtistAdapter=new ArtistListAdapter(getActivity(), mArtistParcelList);
         mArtistListView.setAdapter(mArtistAdapter);
 
+        if(savedInstanceState != null && savedInstanceState.containsKey(POSITION) ){
+            mArtistListView.post(new Runnable() {
+                @Override
+                public void run() {
+                    mArtistListView.smoothScrollToPosition(mPosition);
+                    mArtistListView.setItemChecked(mPosition, true);
+                }
+            });
+        }
+
         mArtistListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View forecastListView, int i, long l) {
                 ArtistParcel artist = (ArtistParcel) adapterView.getItemAtPosition(i);
                 artistLayout.requestFocus();
 
-                Intent trackIntent = new Intent(forecastListView.getContext(), TopTracksActivity.class);
-                trackIntent.putExtra(Intent.EXTRA_TEXT, artist.getId());
-                trackIntent.putExtra(Intent.EXTRA_TITLE, artist.getName());
-                trackIntent.setType(HTTP.PLAIN_TEXT_TYPE);
-                startActivity(trackIntent);
+                ((Callback) getActivity()).onItemSelected(artist.getId(), artist.getName());
+                mPosition = i;
+//                Intent trackIntent = new Intent(forecastListView.getContext(), TopTracksActivity.class);
+//                trackIntent.putExtra(Intent.EXTRA_TEXT, artist.getId());
+//                trackIntent.putExtra(Intent.EXTRA_TITLE, artist.getName());
+//                trackIntent.setType(HTTP.PLAIN_TEXT_TYPE);
+//                startActivity(trackIntent);
             }
         });
 
@@ -109,6 +137,9 @@ public class MainActivityFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
+        if(mPosition!=-1){
+            outState.putInt(POSITION, mPosition);
+        }
         outState.putParcelableArrayList(KEY_ARTIST_LIST, mArtistParcelList);
         super.onSaveInstanceState(outState);
     }

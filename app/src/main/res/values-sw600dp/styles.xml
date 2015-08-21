@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="ArtistListStyle">
+        <item name="android:choiceMode">singleChoice</item>
+    </style>
+    <style name="PlayerImageStyle">
+        <item name="android:layout_width">wrap_content</item>
+    </style>
+</resources>
