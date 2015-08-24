@@ -31,22 +31,35 @@ public class TrackListAdapter extends ArrayAdapter<TrackParcel> {
     @Override
     public View getView(int position,View view,ViewGroup parent) {
         LayoutInflater inflater=context.getLayoutInflater();
-        View rowView=inflater.inflate(R.layout.track_list, null, true);
+//        View rowView=inflater.inflate(R.layout.track_list, null, true);
 
-        ImageView imageView = (ImageView) rowView.findViewById(R.id.track_icon);
-        TextView txtTitle = (TextView) rowView.findViewById(R.id.track_name);
-        TextView txtDesc = (TextView) rowView.findViewById(R.id.track_desc);
-        txtTitle.setText(trackList.get(position).getAlbum());
-        txtDesc.setText(trackList.get(position).getTitle());
+//        ImageView imageView = (ImageView) rowView.findViewById(R.id.track_icon);
+//        TextView txtTitle = (TextView) rowView.findViewById(R.id.track_name);
+//        TextView txtDesc = (TextView) rowView.findViewById(R.id.track_desc);
 
-        if(trackList.get(position).getImage() != null) {
-            Picasso.with(context).load(trackList.get(position).getImage()).into(imageView);
+        ViewHolder holder;
+
+        if(view == null){
+            View rowView=inflater.inflate(R.layout.track_list, null, true);
+            holder = new ViewHolder(rowView);
+            rowView.setTag(holder);
+            view = rowView;
         }else{
-            imageView.setImageResource(R.drawable.ic_launcher);
+            holder = (ViewHolder) view.getTag();
         }
 
 
-        return rowView;
+        holder.txtTitle.setText(trackList.get(position).getAlbum());
+        holder.txtDesc.setText(trackList.get(position).getTitle());
+
+        if(trackList.get(position).getImage() != null) {
+            Picasso.with(context).load(trackList.get(position).getImage()).into(holder.imageView);
+        }else{
+            holder.imageView.setImageResource(R.drawable.ic_launcher);
+        }
+
+
+        return view;
     };
 
     @Override
@@ -54,5 +67,20 @@ public class TrackListAdapter extends ArrayAdapter<TrackParcel> {
         super.addAll(collection);
         this.trackList.clear();
         this.trackList.addAll(collection);
+    }
+
+    /**
+     * Cache of the children views for a forecast list item.
+     */
+    public static class ViewHolder {
+        public final ImageView imageView;
+        public final TextView txtTitle;
+        public final TextView txtDesc;
+
+        public ViewHolder(View view) {
+            imageView = (ImageView) view.findViewById(R.id.track_icon);
+            txtTitle = (TextView) view.findViewById(R.id.track_name);
+            txtDesc = (TextView) view.findViewById(R.id.track_desc);
+        }
     }
 }
