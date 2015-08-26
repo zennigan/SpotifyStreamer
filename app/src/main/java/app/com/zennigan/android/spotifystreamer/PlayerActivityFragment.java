@@ -34,6 +34,7 @@ public class PlayerActivityFragment extends DialogFragment implements MediaPlaye
     public static String PLAYER_POSITION = "position";
 
     public static String PLAYER_CURRENT_DURATION = "currDuration";
+    public static String PLAYER_CURRENT_MAX = "currMax";
 
     private ArrayList<TrackParcel> mTrackParcelList;
     private int mPosition;
@@ -75,10 +76,14 @@ public class PlayerActivityFragment extends DialogFragment implements MediaPlaye
     public PlayerActivityFragment() {
     }
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         View rootView = inflater.inflate(R.layout.fragment_player, container, false);
+        mUtils = new Utilities();
+
         Bundle arguments  = getArguments();
         if(arguments !=null){
             mTrackParcelList = arguments.getParcelableArrayList(PLAYER_TRACK_LIST);
@@ -172,6 +177,12 @@ public class PlayerActivityFragment extends DialogFragment implements MediaPlaye
         if(savedInstanceState != null && savedInstanceState.containsKey(PLAYER_CURRENT_DURATION)) {
             // read the person list from the saved state
             mPrevDuration = savedInstanceState.getInt(PLAYER_CURRENT_DURATION);
+            int max = savedInstanceState.getInt(PLAYER_CURRENT_MAX);
+            mSeekBar.setMax(max);
+            mSeekBar.setProgress(mPrevDuration);
+
+            mCurrentDurationLabel.setText("" + mUtils.milliSecondsToTimer(mPrevDuration));
+            mMaxDurationLabel.setText("" + mUtils.milliSecondsToTimer(max));
             onPlaySelected(mUrl);
         }else {
             mPrevDuration = -1;
@@ -195,7 +206,9 @@ public class PlayerActivityFragment extends DialogFragment implements MediaPlaye
 
         if(mIsPlaying) {
             int currentDuration = mMediaPlayer.getCurrentPosition();
+            int currentMax = mMediaPlayer.getDuration();
             outState.putInt(PLAYER_CURRENT_DURATION,currentDuration);
+            outState.putInt(PLAYER_CURRENT_MAX,currentMax);
         }
         super.onSaveInstanceState(outState);
     }
@@ -219,7 +232,6 @@ public class PlayerActivityFragment extends DialogFragment implements MediaPlaye
 
 
         mSeekBar.setOnSeekBarChangeListener(this);
-        mUtils = new Utilities();
 
         try {
 //            mProgressDialog = new ProgressDialog(getActivity());
@@ -269,7 +281,6 @@ public class PlayerActivityFragment extends DialogFragment implements MediaPlaye
         mMediaPlayer.start();
 
         // set Progress bar values
-        mSeekBar.setProgress(0);
         mSeekBar.setMax(mMediaPlayer.getDuration());
         mCurrentDurationLabel.setText("" + mUtils.milliSecondsToTimer(mMediaPlayer.getCurrentPosition()));
         mMaxDurationLabel.setText("" + mUtils.milliSecondsToTimer(mMediaPlayer.getDuration()));

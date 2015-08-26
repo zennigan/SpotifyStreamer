@@ -22,7 +22,8 @@
         </activity>
         <activity
             android:name=".TopTracksActivity"
-            android:label="@string/title_activity_top_tracks" >
+            android:label="@string/title_activity_top_tracks"
+            android:launchMode="singleTop">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="app.com.zennigan.android.spotifystreamer.MainActivity" />
@@ -37,6 +38,7 @@
         </activity>
         <activity
             android:name=".PlayerActivity"
+            android:parentActivityName=".TopTracksActivity" >
             android:label="@string/title_activity_player">
         </activity>
     </application>
